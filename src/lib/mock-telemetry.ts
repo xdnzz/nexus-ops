@@ -47,9 +47,10 @@ export function generateMockTransaction(index: number, baseTimestamp = Date.now(
   };
 }
 
+const MOCK_DATASET_EPOCH = Date.UTC(2026, 9, 27, 18, 0, 0);
+
 export function generateMockDataset(count = 2500): TransactionRecord[] {
-  const now = Date.now();
-  return Array.from({ length: count }, (_, i) => generateMockTransaction(i, now));
+  return Array.from({ length: count }, (_, i) => generateMockTransaction(i, MOCK_DATASET_EPOCH));
 }
 
 export function calculateTelemetryMetrics(
