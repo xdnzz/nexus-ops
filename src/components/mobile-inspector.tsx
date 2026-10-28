@@ -1,6 +1,7 @@
 'use client';
 
-import { StatusBadge, statusLabel } from '@/components/ui/status-badge';
+import { useEffect } from 'react';
+import { StatusBadge } from '@/components/ui/status-badge';
 import { formatClockTime, formatMoney, shortenAccount } from '@/lib/format';
 import { auditTrail, heuristicTone, payloadPreview, riskHeuristics } from '@/lib/inspector';
 import { useTelemetryStore } from '@/store/telemetry-store';
@@ -26,22 +27,36 @@ export function MobileInspector() {
   const records = useTelemetryStore((state) => state.records);
   const record = records.find((item) => item.id === selectedRecordId);
 
+  useEffect(() => {
+    const root = document.getElementById('mobile-inspector');
+    if (!root || root.getClientRects().length === 0) return;
+    document.getElementById('inspector-back')?.focus();
+  }, [record?.id]);
+
   if (!record) return null;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-canvas">
+    <div id="mobile-inspector" className="flex min-h-0 flex-1 flex-col bg-canvas">
       <header className="flex items-center justify-between border-b border-line bg-surface px-4 pt-4 pb-3">
         <button
+          id="inspector-back"
           type="button"
-          onClick={() => setSelectedRecordId(null)}
-          className="flex items-center gap-2 text-sm font-medium text-fg"
+          onClick={() => {
+            setSelectedRecordId(null);
+            window.requestAnimationFrame(() => document.getElementById('ledger')?.focus());
+          }}
+          className="flex min-h-8 items-center gap-2 text-sm font-medium text-fg"
         >
           <img src="/figma/chevron.svg" alt="" />
           Ledger
         </button>
-        <p className="font-mono text-xs text-fg-muted">Inspector</p>
+        <h1 className="m-0 font-mono text-xs font-normal text-fg-muted">Inspector</h1>
       </header>
-      <div className="flex flex-1 flex-col gap-2 overflow-y-auto px-4 py-3">
+      <div
+        tabIndex={0}
+        aria-label="Inspector details"
+        className="flex flex-1 flex-col gap-2 overflow-y-auto px-4 py-3"
+      >
         <section className="flex flex-col gap-2 rounded-lg border border-line bg-surface p-3">
           <div className="flex items-center justify-between">
             <p className="font-mono text-base font-medium text-fg">{record.id}</p>
@@ -59,13 +74,23 @@ export function MobileInspector() {
           </p>
         </section>
 
-        <section className="flex flex-col gap-2 rounded-lg border border-line bg-surface p-3">
-          <p className="text-xs font-medium text-fg-muted">Risk heuristics</p>
+        <section aria-labelledby="mobile-heuristics" className="flex flex-col gap-2 rounded-lg border border-line bg-surface p-3">
+          <h2 id="mobile-heuristics" className="m-0 text-xs font-medium text-fg-muted">
+            Risk heuristics
+          </h2>
           {riskHeuristics(record).map((item) => {
             const tone = heuristicTone(item.value);
             const [textClass, barClass] = TONE_CLASS[tone].split(' ');
             return (
-              <div key={item.label} className="flex w-full flex-col gap-1.5">
+              <div
+                key={item.label}
+                role="meter"
+                aria-label={item.label}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={item.value}
+                className="flex w-full flex-col gap-1.5"
+              >
                 <div className="flex items-center justify-between text-[13px]">
                   <span className="text-fg">{item.label}</span>
                   <span className={`font-mono font-medium ${textClass}`}>{item.value}</span>
@@ -78,20 +103,25 @@ export function MobileInspector() {
           })}
         </section>
 
-        <section className="flex flex-col gap-2 rounded-lg border border-line bg-surface p-3">
-          <p className="text-xs font-medium text-fg-muted">Audit trail</p>
-          {auditTrail(record).map((event) => (
-            <div key={event.message}>
-              <p className="font-mono text-[11px] text-fg-subtle">{event.time}</p>
-              <p className="text-[13px] text-fg">{event.message}</p>
-            </div>
-          ))}
+        <section aria-labelledby="mobile-audit" className="flex flex-col gap-2 rounded-lg border border-line bg-surface p-3">
+          <h2 id="mobile-audit" className="m-0 text-xs font-medium text-fg-muted">
+            Audit trail
+          </h2>
+          <ul className="m-0 flex list-none flex-col gap-2 p-0">
+            {auditTrail(record).map((event) => (
+              <li key={event.message}>
+                <p className="font-mono text-[11px] text-fg-subtle">{event.time}</p>
+                <p className="text-[13px] text-fg">{event.message}</p>
+              </li>
+            ))}
+          </ul>
         </section>
 
-        <section className="flex flex-col gap-2 rounded-lg border border-line bg-surface p-3 text-xs">
-          <p className="font-medium text-fg-muted">Raw payload</p>
+        <section aria-labelledby="mobile-payload" className="flex flex-col gap-2 rounded-lg border border-line bg-surface p-3 text-xs">
+          <h2 id="mobile-payload" className="m-0 font-medium text-fg-muted">
+            Raw payload
+          </h2>
           <pre className="font-mono whitespace-pre-wrap text-fg">{payloadPreview(record)}</pre>
-          <p className="sr-only">{statusLabel(record.status)}</p>
         </section>
       </div>
     </div>

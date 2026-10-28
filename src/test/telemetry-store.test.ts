@@ -224,4 +224,27 @@ describe('useTelemetryStore State Management', () => {
     const records = useTelemetryStore.getState().records;
     expect(records[0].id).toBe(newRecord.id);
   });
+
+  it('keeps the ledger capped at 5000 records', () => {
+    const records = generateMockDataset(5000);
+    useTelemetryStore.setState({ records });
+    const incoming = generateMockTransaction(90000);
+
+    useTelemetryStore.getState().appendRecord(incoming);
+
+    const next = useTelemetryStore.getState().records;
+    expect(next).toHaveLength(5000);
+    expect(next[0].id).toBe(incoming.id);
+    expect(next.some((record) => record.id === records[4999].id)).toBe(false);
+  });
+
+  it('returns only records that match the active filters', () => {
+    useTelemetryStore.getState().setFilters({ currency: 'all', status: 'blocked' });
+
+    const results = useTelemetryStore.getState().getFilteredRecords();
+
+    expect(results.length).toBeGreaterThan(0);
+    expect(results.every((record) => record.status === 'blocked')).toBe(true);
+    expect(useTelemetryStore.getState().getMetrics().totalProcessed).toBe(results.length);
+  });
 });

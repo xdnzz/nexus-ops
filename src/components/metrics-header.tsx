@@ -65,35 +65,43 @@ export function MetricsHeader() {
     <header className="box-border border-b border-line bg-surface md:h-16">
       <div className="flex items-center justify-between gap-5 px-4 pt-4 pb-3 md:h-full md:justify-start md:py-0">
         <div className="flex items-center gap-2">
-          <span className="size-2.5 rounded-[2px] bg-settled" />
-          <p className="font-mono text-xs font-medium text-fg md:font-sans md:text-sm md:leading-[18px]">
+          <span aria-hidden="true" className="size-2.5 rounded-[2px] bg-settled" />
+          <h1 className="m-0 font-mono text-xs font-medium text-fg md:font-sans md:text-sm md:leading-[18px]">
             NEXUS // OPS
-          </p>
+          </h1>
         </div>
         <button
           type="button"
+          aria-pressed={isStreaming}
           onClick={toggleStreaming}
-          className="flex items-center gap-2 rounded-full bg-subtle px-2 py-1 md:h-7 md:py-0"
+          className="flex min-h-6 items-center gap-2 rounded-full bg-subtle px-2 py-1 md:h-7 md:py-0"
         >
-          <img src="/figma/dot-settled.svg" alt="" className={isStreaming ? 'animate-pulse' : ''} />
+          <img
+            src="/figma/dot-settled.svg"
+            alt=""
+            className={isStreaming ? 'motion-safe:animate-pulse' : ''}
+          />
           <span className="font-mono text-[11px] text-fg-muted md:hidden">{throughput} TX/S</span>
           <span className="hidden font-mono text-xs font-medium text-settled md:inline">
             {`LIVE STREAMING · ${throughput} TX/S`}
           </span>
         </button>
-        <div className="hidden min-w-0 flex-1 items-center justify-end gap-5 md:flex">
+        <p className="sr-only" aria-live="polite">
+          {isStreaming ? 'Live streaming on' : 'Live streaming off'}
+        </p>
+        <dl className="m-0 hidden min-w-0 flex-1 items-center justify-end gap-5 md:flex">
           {stats.map((stat) => (
             <div key={stat.label} className="flex flex-col gap-0.5 whitespace-nowrap">
-              <p className="text-[11px] font-medium uppercase leading-[15px] text-fg-subtle">
+              <dt className="text-[11px] font-medium uppercase leading-[15px] text-fg-subtle">
                 {stat.label}
-              </p>
-              <div className="flex items-center gap-2 font-mono font-medium">
+              </dt>
+              <dd className="m-0 flex items-center gap-2 font-mono font-medium">
                 <span className="text-sm leading-[18px] text-fg">{stat.value}</span>
                 <span className={`text-xs leading-4 ${stat.deltaClass}`}>{stat.delta}</span>
-              </div>
+              </dd>
             </div>
           ))}
-        </div>
+        </dl>
       </div>
     </header>
   );

@@ -10,6 +10,7 @@ export function FilterPill({
   return (
     <button
       type="button"
+      aria-pressed={active}
       onClick={onClick}
       className={`flex h-7 shrink-0 items-center rounded-full px-2 text-xs font-medium whitespace-nowrap ${
         active ? 'bg-fg text-canvas' : 'bg-subtle text-fg-muted'

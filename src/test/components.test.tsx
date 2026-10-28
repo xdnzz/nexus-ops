@@ -31,7 +31,7 @@ describe('UI Component Integration', () => {
     fireEvent.click(screen.getByRole('button', { name: /TX\/S/i }));
 
     expect(useTelemetryStore.getState().isStreaming).toBe(true);
-    expect(screen.getByText(/LIVE STREAMING/i)).toBeDefined();
+    expect(screen.getByRole('button', { name: /LIVE STREAMING/i })).toBeDefined();
   });
 
   it('updates search filter when typing into search input', () => {

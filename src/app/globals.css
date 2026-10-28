@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-/* nexus-tokens */
 @theme {
   --font-sans: var(--font-inter), sans-serif;
   --font-mono: var(--font-jetbrains), monospace;
@@ -13,7 +12,7 @@
   --color-line-subtle: #334155;
   --color-fg: #f1f5f9;
   --color-fg-muted: #94a3b8;
-  --color-fg-subtle: #64748b;
+  --color-fg-subtle: #8496ac;
   --color-settled: #10b981;
   --color-pending: #f59e0b;
   --color-flagged: #f97316;
@@ -25,4 +24,9 @@ body {
   background: var(--color-canvas);
   color: var(--color-fg);
   font-family: var(--font-sans);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }

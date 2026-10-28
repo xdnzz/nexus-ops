@@ -31,7 +31,13 @@ export function useTelemetryShortcuts(): void {
 
       if (isInputFocused) return;
 
+      const controlFocused =
+        activeElement instanceof HTMLButtonElement ||
+        activeElement instanceof HTMLAnchorElement ||
+        activeElement?.getAttribute('role') === 'gridcell';
+
       if (e.code === 'Space') {
+        if (controlFocused) return;
         e.preventDefault();
         toggleStreaming();
       } else if (e.key === 'd' || e.key === 'D') {

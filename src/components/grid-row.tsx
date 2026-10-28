@@ -4,27 +4,34 @@ import { TransactionRecord } from '@/types/telemetry';
 
 export function GridRow({
   record,
+  rowIndex,
   size,
   start,
   selected,
   selectedColumn,
-  zebra,
+  tabColumn,
   onSelectCell,
+  onFocusCell,
   onOpen,
 }: {
   record: TransactionRecord;
+  rowIndex: number;
   size: number;
   start: number;
   selected: boolean;
   selectedColumn: number | null;
-  zebra: boolean;
+  tabColumn: number;
   onSelectCell: (columnIndex: number) => void;
+  onFocusCell: (columnIndex: number) => void;
   onOpen: () => void;
 }) {
-  const background = selected ? 'bg-muted' : zebra ? 'bg-subtle' : 'bg-surface';
+  const background = selected ? 'bg-muted' : rowIndex % 2 === 1 ? 'bg-subtle' : 'bg-surface';
 
   return (
     <div
+      role="row"
+      aria-rowindex={rowIndex + 2}
+      aria-selected={selected}
       onDoubleClick={onOpen}
       style={{
         position: 'absolute',
@@ -39,17 +46,22 @@ export function GridRow({
       {GRID_COLUMNS.map((column, columnIndex) => {
         const focused = selectedColumn === columnIndex;
         return (
-          <button
+          <div
             key={column.id}
-            type="button"
+            role="gridcell"
+            tabIndex={focused ? 0 : -1}
+            data-row={rowIndex}
+            data-col={columnIndex}
+            aria-colindex={columnIndex + 1}
             onClick={() => onSelectCell(columnIndex)}
+            onFocus={() => onFocusCell(columnIndex)}
             style={columnStyle(column.width)}
             className={`flex h-full min-w-0 items-center overflow-hidden px-2 ${
               column.align === 'right' ? 'justify-end' : 'justify-start'
             } ${focused ? 'shadow-[inset_0_0_0_2px_var(--color-focus)]' : ''}`}
           >
             <GridCell columnId={column.id} record={record} />
-          </button>
+          </div>
         );
       })}
     </div>

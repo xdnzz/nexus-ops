@@ -18,11 +18,17 @@ export function MobileLedger() {
   const records = useFilteredRecords();
   const setSelectedRecordId = useTelemetryStore((state) => state.setSelectedRecordId);
 
+  if (records.length === 0) {
+    return (
+      <p className="px-4 py-8 text-sm text-fg-muted">No transactions found matching the active filters.</p>
+    );
+  }
+
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto">
+    <ul className="m-0 min-h-0 flex-1 list-none overflow-y-auto p-0">
       {records.map((record) => (
+        <li key={record.id}>
         <button
-          key={record.id}
           type="button"
           onClick={() => setSelectedRecordId(record.id)}
           className="flex w-full flex-col gap-1.5 border-b border-line bg-canvas px-4 py-3 text-left"
@@ -44,8 +50,9 @@ export function MobileLedger() {
             {formatClockTime(record.timestamp)} · {record.latencyMs}ms
           </span>
         </button>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }
 

@@ -20,18 +20,34 @@ export function TransactionDrawer() {
   const heuristics = riskHeuristics(record);
 
   return (
-    <aside className="flex h-full w-[360px] shrink-0 flex-col gap-3.5 overflow-y-auto border-l border-line bg-surface p-4">
-      <p className="text-[11px] font-medium leading-[15px] text-fg-subtle">INSPECTOR</p>
-      <p className="font-mono text-[18px] font-medium leading-[22px] text-fg">{record.id}</p>
+    <aside
+      aria-labelledby="inspector-heading"
+      tabIndex={0}
+      className="flex h-full w-[360px] shrink-0 flex-col gap-3.5 overflow-y-auto border-l border-line bg-surface p-4"
+    >
+      <h2 id="inspector-heading" className="m-0 text-[11px] font-medium leading-[15px] text-fg-subtle">
+        INSPECTOR
+      </h2>
+      <p aria-live="polite" className="font-mono text-[18px] font-medium leading-[22px] text-fg">
+        {record.id}
+      </p>
       <p className="font-mono text-[12px] leading-4 font-normal text-fg-muted">{record.originAccount}</p>
       <StatusBadge status={record.status} />
 
-      <p className="text-[11px] font-medium leading-[15px] text-fg-subtle">RISK HEURISTICS</p>
+      <h3 className="m-0 text-[11px] font-medium leading-[15px] text-fg-subtle">RISK HEURISTICS</h3>
       {heuristics.map((item) => {
         const tone = heuristicTone(item.value);
         const [textClass, barClass] = TONE_CLASS[tone].split(' ');
         return (
-          <div key={item.label} className="flex w-full flex-col gap-1">
+          <div
+            key={item.label}
+            role="meter"
+            aria-label={item.label}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={item.value}
+            className="flex w-full flex-col gap-1"
+          >
             <div className="flex items-start justify-between text-[12px] leading-4">
               <span className="font-sans font-normal text-fg-muted">{item.label}</span>
               <span className={`font-mono font-medium ${textClass}`}>{item.value}</span>
@@ -43,16 +59,18 @@ export function TransactionDrawer() {
         );
       })}
 
-      <p className="text-[11px] font-medium leading-[15px] text-fg-subtle">AUDIT TRAIL</p>
-      {auditTrail(record).map((event) => (
-        <div key={event.message} className="flex items-center gap-2">
-          <img src="/figma/dot-flagged.svg" alt="" />
-          <span className="font-mono text-[12px] leading-4 font-normal text-fg-subtle">{event.time}</span>
-          <span className="font-sans text-[12px] leading-4 font-normal text-fg">{event.message}</span>
-        </div>
-      ))}
+      <h3 className="m-0 text-[11px] font-medium leading-[15px] text-fg-subtle">AUDIT TRAIL</h3>
+      <ul className="flex flex-col gap-3.5">
+        {auditTrail(record).map((event) => (
+          <li key={event.message} className="flex items-center gap-2">
+            <img src="/figma/dot-flagged.svg" alt="" />
+            <span className="font-mono text-[12px] leading-4 font-normal text-fg-subtle">{event.time}</span>
+            <span className="font-sans text-[12px] leading-4 font-normal text-fg">{event.message}</span>
+          </li>
+        ))}
+      </ul>
 
-      <p className="text-[11px] font-medium leading-[15px] text-fg-subtle">RAW PAYLOAD</p>
+      <h3 className="m-0 text-[11px] font-medium leading-[15px] text-fg-subtle">RAW PAYLOAD</h3>
       <pre className="w-full rounded-md bg-canvas p-2.5 font-mono text-[12px] leading-4 font-normal whitespace-pre-wrap text-fg-muted">
         {payloadPreview(record)}
       </pre>
