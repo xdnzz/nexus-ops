@@ -110,6 +110,7 @@ describe('Telemetry Domain and Aggregation Engine', () => {
   it('filters records by minimum risk score', () => {
     const criteria: TelemetryFilterCriteria = {
       ...INITIAL_FILTERS,
+      currency: 'all',
       minRiskScore: 80,
     };
 
@@ -133,6 +134,7 @@ describe('Telemetry Domain and Aggregation Engine', () => {
   it('matches textual search across ID, origin and destination accounts', () => {
     const searchById: TelemetryFilterCriteria = {
       ...INITIAL_FILTERS,
+      currency: 'all',
       searchQuery: '000002',
     };
     expect(filterTelemetryRecords(baseRecords, searchById)).toHaveLength(1);
@@ -145,6 +147,7 @@ describe('Telemetry Domain and Aggregation Engine', () => {
 
     const searchByDest: TelemetryFilterCriteria = {
       ...INITIAL_FILTERS,
+      currency: 'all',
       searchQuery: 'dest_0600',
     };
     expect(filterTelemetryRecords(baseRecords, searchByDest)).toHaveLength(1);

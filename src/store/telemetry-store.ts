@@ -16,7 +16,7 @@ import {
 export const INITIAL_FILTERS: TelemetryFilterCriteria = {
   searchQuery: '',
   status: 'all',
-  currency: 'all',
+  currency: 'USD',
   minAmount: null,
   maxAmount: null,
   minRiskScore: 0,

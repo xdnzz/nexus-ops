@@ -1,22 +1,28 @@
 import { GridCell } from '@/components/grid-cell';
-import { GRID_COLUMNS } from '@/components/grid-columns';
+import { columnStyle, GRID_COLUMNS } from '@/components/grid-columns';
 import { TransactionRecord } from '@/types/telemetry';
 
 export function GridRow({
   record,
   size,
   start,
+  selected,
   selectedColumn,
+  zebra,
   onSelectCell,
   onOpen,
 }: {
   record: TransactionRecord;
   size: number;
   start: number;
+  selected: boolean;
   selectedColumn: number | null;
+  zebra: boolean;
   onSelectCell: (columnIndex: number) => void;
   onOpen: () => void;
 }) {
+  const background = selected ? 'bg-muted' : zebra ? 'bg-subtle' : 'bg-surface';
+
   return (
     <div
       onDoubleClick={onOpen}
@@ -28,29 +34,22 @@ export function GridRow({
         height: `${size}px`,
         transform: `translateY(${start}px)`,
       }}
-      className={`flex items-center border-b border-zinc-100 text-xs transition-colors dark:border-zinc-800/60 ${
-        selectedColumn !== null
-          ? 'bg-indigo-50/60 dark:bg-indigo-950/20'
-          : 'hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40'
-      }`}
+      className={`flex items-center border-b border-line ${background}`}
     >
       {GRID_COLUMNS.map((column, columnIndex) => {
-        const isCellSelected = selectedColumn === columnIndex;
-
+        const focused = selectedColumn === columnIndex;
         return (
-          <div
+          <button
             key={column.id}
+            type="button"
             onClick={() => onSelectCell(columnIndex)}
-            className={`shrink-0 cursor-pointer truncate px-3 ${column.width} ${
-              column.align === 'right' ? 'text-right' : 'text-left'
-            } ${
-              isCellSelected
-                ? 'bg-indigo-100/50 ring-1 ring-inset ring-indigo-500 dark:bg-indigo-900/40'
-                : ''
-            }`}
+            style={columnStyle(column.width)}
+            className={`flex h-full min-w-0 items-center overflow-hidden px-2 ${
+              column.align === 'right' ? 'justify-end' : 'justify-start'
+            } ${focused ? 'shadow-[inset_0_0_0_2px_var(--color-focus)]' : ''}`}
           >
             <GridCell columnId={column.id} record={record} />
-          </div>
+          </button>
         );
       })}
     </div>

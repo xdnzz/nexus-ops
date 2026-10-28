@@ -1,100 +1,61 @@
 'use client';
 
-import { X } from 'lucide-react';
-import { OperatorActions } from '@/components/operator-actions';
-import { TelemetryPayload } from '@/components/telemetry-payload';
-import { DetailField } from '@/components/ui/detail-field';
-import { MethodBadge } from '@/components/ui/method-badge';
-import { RiskBar, RiskScore } from '@/components/ui/risk-score';
 import { StatusBadge } from '@/components/ui/status-badge';
-import { formatMoney } from '@/lib/format';
 import { useTelemetryStore } from '@/store/telemetry-store';
+import { auditTrail, heuristicTone, payloadPreview, riskHeuristics } from '@/lib/inspector';
+
+const TONE_CLASS = {
+  settled: 'text-settled bg-settled',
+  pending: 'text-pending bg-pending',
+  flagged: 'text-flagged bg-flagged',
+};
 
 export function TransactionDrawer() {
   const selectedRecordId = useTelemetryStore((state) => state.selectedRecordId);
-  const setSelectedRecordId = useTelemetryStore((state) => state.setSelectedRecordId);
-  const updateRecordStatus = useTelemetryStore((state) => state.updateRecordStatus);
   const records = useTelemetryStore((state) => state.records);
-
-  const record = records.find((item) => item.id === selectedRecordId);
+  const record = records.find((item) => item.id === selectedRecordId) ?? records[0];
 
   if (!record) return null;
 
+  const heuristics = riskHeuristics(record);
+
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs">
-      <div className="flex h-full w-full max-w-lg flex-col border-l border-zinc-200 bg-white p-6 shadow-2xl dark:border-zinc-800 dark:bg-zinc-950">
-        <div className="flex items-center justify-between border-b border-zinc-200 pb-4 dark:border-zinc-800">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-base font-bold text-zinc-900 dark:text-zinc-100">
-                {record.id}
-              </span>
-              <span className="rounded bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                {record.region}
-              </span>
+    <aside className="flex h-full w-[360px] shrink-0 flex-col gap-3.5 overflow-y-auto border-l border-line bg-surface p-4">
+      <p className="text-[11px] font-medium leading-[15px] text-fg-subtle">INSPECTOR</p>
+      <p className="font-mono text-[18px] font-medium leading-[22px] text-fg">{record.id}</p>
+      <p className="font-mono text-[12px] leading-4 font-normal text-fg-muted">{record.originAccount}</p>
+      <StatusBadge status={record.status} />
+
+      <p className="text-[11px] font-medium leading-[15px] text-fg-subtle">RISK HEURISTICS</p>
+      {heuristics.map((item) => {
+        const tone = heuristicTone(item.value);
+        const [textClass, barClass] = TONE_CLASS[tone].split(' ');
+        return (
+          <div key={item.label} className="flex w-full flex-col gap-1">
+            <div className="flex items-start justify-between text-[12px] leading-4">
+              <span className="font-sans font-normal text-fg-muted">{item.label}</span>
+              <span className={`font-mono font-medium ${textClass}`}>{item.value}</span>
             </div>
-            <p className="text-xs text-zinc-500">
-              Recorded at {new Date(record.timestamp).toISOString()}
-            </p>
+            <div className="h-1 w-full overflow-hidden rounded-full bg-subtle">
+              <div className={`h-1 ${barClass}`} style={{ width: `${item.value}%` }} />
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setSelectedRecordId(null)}
-            className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-          >
-            <X className="h-5 w-5" />
-          </button>
+        );
+      })}
+
+      <p className="text-[11px] font-medium leading-[15px] text-fg-subtle">AUDIT TRAIL</p>
+      {auditTrail(record).map((event) => (
+        <div key={event.message} className="flex items-center gap-2">
+          <img src="/figma/dot-flagged.svg" alt="" />
+          <span className="font-mono text-[12px] leading-4 font-normal text-fg-subtle">{event.time}</span>
+          <span className="font-sans text-[12px] leading-4 font-normal text-fg">{event.message}</span>
         </div>
+      ))}
 
-        <div className="flex-1 space-y-6 overflow-y-auto py-4 text-xs">
-          <div className="flex items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
-            <div>
-              <span className="text-[11px] font-medium text-zinc-500">Transaction Amount</span>
-              <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-                {formatMoney(record.amount, record.currency)}
-              </div>
-            </div>
-            <div className="text-right">
-              <span className="text-[11px] font-medium text-zinc-500">Current Status</span>
-              <div className="mt-1">
-                <StatusBadge status={record.status} />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
-            <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-              Routing and Accounts
-            </h4>
-            <div className="grid grid-cols-2 gap-3">
-              <DetailField label="Origin:" mono>
-                {record.originAccount}
-              </DetailField>
-              <DetailField label="Destination:" mono>
-                {record.destinationAccount}
-              </DetailField>
-              <DetailField label="Payment Method:">
-                <MethodBadge method={record.method} />
-              </DetailField>
-              <DetailField label="Gateway Latency:">{record.latencyMs} ms</DetailField>
-            </div>
-          </div>
-
-          <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                Anti-Fraud Risk Assessment
-              </h4>
-              <RiskScore score={record.riskScore} className="font-mono font-bold" />
-            </div>
-            <RiskBar score={record.riskScore} />
-          </div>
-
-          <TelemetryPayload record={record} />
-        </div>
-
-        <OperatorActions onStatusChange={(status) => updateRecordStatus(record.id, status)} />
-      </div>
-    </div>
+      <p className="text-[11px] font-medium leading-[15px] text-fg-subtle">RAW PAYLOAD</p>
+      <pre className="w-full rounded-md bg-canvas p-2.5 font-mono text-[12px] leading-4 font-normal whitespace-pre-wrap text-fg-muted">
+        {payloadPreview(record)}
+      </pre>
+    </aside>
   );
 }

@@ -1,18 +1,37 @@
 import { TransactionStatus } from '@/types/telemetry';
 
-const STATUS_CLASS: Record<TransactionStatus, string> = {
-  settled: 'bg-emerald-500/10 text-emerald-700 ring-1 ring-emerald-500/20 dark:text-emerald-400',
-  pending: 'bg-amber-500/10 text-amber-700 ring-1 ring-amber-500/20 dark:text-amber-400',
-  flagged: 'bg-purple-500/10 text-purple-700 ring-1 ring-purple-500/20 dark:text-purple-400',
-  blocked: 'bg-rose-500/10 text-rose-700 ring-1 ring-rose-500/20 dark:text-rose-400',
+const DOT: Record<TransactionStatus, string> = {
+  settled: '/figma/dot-settled.svg',
+  pending: '/figma/dot-pending.svg',
+  flagged: '/figma/dot-flagged.svg',
+  blocked: '/figma/dot-blocked.svg',
 };
+
+const TONE: Record<TransactionStatus, string> = {
+  settled: 'border-settled text-settled',
+  pending: 'border-pending text-pending',
+  flagged: 'border-flagged text-flagged',
+  blocked: 'border-blocked text-blocked',
+};
+
+const LABEL: Record<TransactionStatus, string> = {
+  settled: 'Settled',
+  pending: 'Pending',
+  flagged: 'Flagged',
+  blocked: 'Blocked',
+};
+
+export function statusLabel(status: TransactionStatus) {
+  return LABEL[status];
+}
 
 export function StatusBadge({ status }: { status: TransactionStatus }) {
   return (
     <span
-      className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide ${STATUS_CLASS[status]}`}
+      className={`inline-flex w-fit items-center gap-1.5 self-start rounded-full border bg-subtle px-2 py-1 ${TONE[status]}`}
     >
-      {status}
+      <img src={DOT[status]} alt="" />
+      <span className="font-sans text-[12px] font-medium leading-4">{LABEL[status]}</span>
     </span>
   );
 }

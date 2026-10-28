@@ -1,28 +1,19 @@
 'use client';
 
-import { RotateCcw, Search, SlidersHorizontal } from 'lucide-react';
 import { ExportMenu } from '@/components/export-menu';
-import { SegmentedControl } from '@/components/ui/segmented-control';
-import { SelectField } from '@/components/ui/select-field';
-import { Surface } from '@/components/ui/surface';
+import { FilterPill } from '@/components/ui/filter-pill';
 import { useTelemetryStore } from '@/store/telemetry-store';
 import { CurrencyCode, GridDensity, TransactionStatus } from '@/types/telemetry';
 
 const STATUS_OPTIONS: { label: string; value: TransactionStatus | 'all' }[] = [
-  { label: 'All Statuses', value: 'all' },
+  { label: 'All', value: 'all' },
   { label: 'Settled', value: 'settled' },
   { label: 'Pending', value: 'pending' },
   { label: 'Flagged', value: 'flagged' },
   { label: 'Blocked', value: 'blocked' },
 ];
 
-const CURRENCY_OPTIONS: { label: string; value: CurrencyCode | 'all' }[] = [
-  { label: 'All Currencies', value: 'all' },
-  { label: 'USD', value: 'USD' },
-  { label: 'EUR', value: 'EUR' },
-  { label: 'GBP', value: 'GBP' },
-  { label: 'BRL', value: 'BRL' },
-];
+const CURRENCY_OPTIONS: CurrencyCode[] = ['USD', 'EUR', 'BRL', 'GBP'];
 
 const DENSITY_OPTIONS: { label: string; value: GridDensity }[] = [
   { label: 'Compact', value: 'compact' },
@@ -33,80 +24,55 @@ const DENSITY_OPTIONS: { label: string; value: GridDensity }[] = [
 export function TelemetryFilters() {
   const filters = useTelemetryStore((state) => state.filters);
   const setFilters = useTelemetryStore((state) => state.setFilters);
-  const resetFilters = useTelemetryStore((state) => state.resetFilters);
   const density = useTelemetryStore((state) => state.density);
   const setDensity = useTelemetryStore((state) => state.setDensity);
 
-  const hasActiveFilters =
-    Boolean(filters.searchQuery) ||
-    filters.status !== 'all' ||
-    filters.currency !== 'all' ||
-    filters.minRiskScore > 0;
-
   return (
-    <Surface className="flex flex-col gap-3 p-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="relative min-w-[240px] flex-1">
-          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-          <input
-            id="telemetry-search-input"
-            type="text"
-            placeholder="Search by ID, origin or destination account... (Press '/' to focus)"
-            value={filters.searchQuery}
-            onChange={(event) => setFilters({ searchQuery: event.target.value })}
-            className="w-full rounded-md border border-zinc-200 bg-zinc-50/50 py-1.5 pl-8 pr-3 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-400 focus:bg-white focus:outline-hidden dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-600"
+    <div className="flex min-h-12 flex-wrap items-center gap-2 border-b border-line bg-canvas px-4 py-2">
+      <label className="flex h-8 w-full shrink-0 items-center gap-2 rounded-md border border-line-subtle bg-subtle px-2.5 md:w-60">
+        <img src="/figma/search.svg" alt="" className="md:hidden" />
+        <input
+          id="telemetry-search-input"
+          type="text"
+          placeholder="Search hash, account, amount"
+          value={filters.searchQuery}
+          onChange={(event) => setFilters({ searchQuery: event.target.value })}
+          className="w-full bg-transparent text-xs text-fg outline-none placeholder:text-fg-subtle md:text-xs"
+        />
+      </label>
+
+      <div className="flex shrink-0 gap-2">
+        {STATUS_OPTIONS.map((option) => (
+          <FilterPill
+            key={option.value}
+            label={option.label}
+            active={filters.status === option.value}
+            onClick={() => setFilters({ status: option.value })}
           />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <SelectField
-            label="Filter by transaction status"
-            value={filters.status}
-            options={STATUS_OPTIONS}
-            onChange={(status) => setFilters({ status })}
-          />
-          <SelectField
-            label="Filter by currency"
-            value={filters.currency}
-            options={CURRENCY_OPTIONS}
-            onChange={(currency) => setFilters({ currency })}
-          />
-
-          <div className="flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-xs text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-            <SlidersHorizontal className="h-3 w-3 text-zinc-400" />
-            <span>Risk &ge;</span>
-            <input
-              type="number"
-              min={0}
-              max={100}
-              placeholder="0"
-              aria-label="Minimum risk score"
-              value={filters.minRiskScore ?? ''}
-              onChange={(event) =>
-                setFilters({
-                  minRiskScore: event.target.value ? Number(event.target.value) : undefined,
-                })
-              }
-              className="w-10 rounded border-0 bg-transparent p-0 text-center font-medium text-zinc-900 focus:outline-hidden dark:text-zinc-100"
-            />
-          </div>
-
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={resetFilters}
-              className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-            >
-              <RotateCcw className="h-3 w-3" />
-              Reset
-            </button>
-          )}
-
-          <ExportMenu />
-        </div>
-
-        <SegmentedControl value={density} options={DENSITY_OPTIONS} onChange={setDensity} />
+        ))}
       </div>
-    </Surface>
+
+      <div className="ml-auto hidden shrink-0 items-center gap-2 md:flex">
+        {CURRENCY_OPTIONS.map((currency) => (
+          <FilterPill
+            key={currency}
+            label={currency}
+            active={filters.currency === currency}
+            onClick={() =>
+              setFilters({ currency: filters.currency === currency ? 'all' : currency })
+            }
+          />
+        ))}
+        {DENSITY_OPTIONS.map((option) => (
+          <FilterPill
+            key={option.value}
+            label={option.label}
+            active={density === option.value}
+            onClick={() => setDensity(option.value)}
+          />
+        ))}
+        <ExportMenu />
+      </div>
+    </div>
   );
 }

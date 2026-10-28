@@ -22,7 +22,7 @@ const REGIONS = ['us-east', 'us-west', 'eu-central', 'sa-east', 'ap-southeast'];
 export function generateMockTransaction(index: number, baseTimestamp = Date.now()): TransactionRecord {
   const method = PAYMENT_METHODS[index % PAYMENT_METHODS.length];
   const currency = CURRENCIES[index % CURRENCIES.length];
-  const status = STATUSES[(index * 7) % STATUSES.length];
+  const status = STATUSES[Math.floor(index / CURRENCIES.length) % STATUSES.length];
   const region = REGIONS[index % REGIONS.length];
 
   const rawAmount = ((index * 97 + 13) % 250000) / 100 + 10;
