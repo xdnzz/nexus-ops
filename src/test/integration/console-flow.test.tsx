@@ -49,8 +49,8 @@ describe('console flow', () => {
   it('shows the USD ledger and the first transaction in the inspector', () => {
     render(<Home />);
 
-    expect(screen.getByRole('gridcell', { name: 'tx_000001', exact: true })).toBeDefined();
-    expect(screen.queryByRole('gridcell', { name: 'tx_000002', exact: true })).toBeNull();
+    expect(screen.getByRole('gridcell', { name: 'tx_000001' })).toBeDefined();
+    expect(screen.queryByRole('gridcell', { name: 'tx_000002' })).toBeNull();
     expect(within(screen.getByRole('complementary')).getByText('tx_000001')).toBeDefined();
     expect(screen.getAllByText('Total processed').length).toBeGreaterThan(0);
   });
@@ -60,7 +60,7 @@ describe('console flow', () => {
 
     clickPill('USD');
 
-    expect(screen.getByRole('gridcell', { name: 'tx_000002', exact: true })).toBeDefined();
+    expect(screen.getByRole('gridcell', { name: 'tx_000002' })).toBeDefined();
     expect(useTelemetryStore.getState().filters.currency).toBe('all');
   });
 
@@ -68,8 +68,8 @@ describe('console flow', () => {
     render(<Home />);
 
     clickPill('Flagged');
-    expect(screen.getByRole('gridcell', { name: 'tx_000009', exact: true })).toBeDefined();
-    expect(screen.queryByRole('gridcell', { name: 'tx_000001', exact: true })).toBeNull();
+    expect(screen.getByRole('gridcell', { name: 'tx_000009' })).toBeDefined();
+    expect(screen.queryByRole('gridcell', { name: 'tx_000001' })).toBeNull();
 
     fireEvent.change(screen.getByPlaceholderText('Search hash, account, amount'), {
       target: { value: 'tx_000005' },
@@ -80,7 +80,7 @@ describe('console flow', () => {
   it('opens the clicked transaction in the inspector', () => {
     render(<Home />);
 
-    fireEvent.click(screen.getByRole('gridcell', { name: 'tx_000005', exact: true }));
+    fireEvent.click(screen.getByRole('gridcell', { name: 'tx_000005' }));
 
     expect(useTelemetryStore.getState().selectedRecordId).toBe('tx_000005');
     expect(within(screen.getByRole('complementary')).getByText('tx_000005')).toBeDefined();
@@ -130,7 +130,7 @@ describe('console flow', () => {
     (document.activeElement as HTMLElement).blur();
     fireEvent.keyDown(window, { code: 'Space' });
     fireEvent.keyDown(window, { key: 'r' });
-    fireEvent.click(screen.getByRole('gridcell', { name: 'tx_000005', exact: true }));
+    fireEvent.click(screen.getByRole('gridcell', { name: 'tx_000005' }));
     fireEvent.keyDown(window, { key: 'Escape' });
 
     expect(useTelemetryStore.getState().density).toBe('comfortable');
